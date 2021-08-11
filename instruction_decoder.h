@@ -5,6 +5,9 @@
 #ifndef GBAEMU_INSTRUCTION_DECODER_H
 #define GBAEMU_INSTRUCTION_DECODER_H
 
+#include <stdint.h>
+#include <ostream>
+
 enum instruction_type{
 
 };
@@ -28,8 +31,14 @@ enum condition{
     UNDEF=0b1111
 };
 
-struct decoded_instruction{
+typedef struct decoded_instruction{
+    uint32_t raw_opcode;
+    instruction_type type;
+    condition cond;
+} decoded_instruction;
 
-};
+void decode_arm(uint32_t opcode, decoded_instruction&);
+void decode_thumb(uint16_t opcode, decoded_instruction&);
+std::ostream &operator<<(std::ostream &os, decoded_instruction&);
 
 #endif //GBAEMU_INSTRUCTION_DECODER_H

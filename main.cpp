@@ -9,7 +9,7 @@
 void main_loop(bus& b, cpu& c){
     auto init_time = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     uint32_t cycle_count = 0;
-    for(uint32_t i = 0; i < 10000000; i++){
+    for(uint32_t i = 0; i < 100; i++){
         cycle_count++;
         b.execute_cycle();
         c.execute_cycle(b);

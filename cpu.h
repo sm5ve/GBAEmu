@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "forward_decls.h"
 #include "memory_transaction.h"
+#include "instruction_decoder.h"
 
 enum cpu_mode{
     usr = 0b10000, //User
@@ -44,7 +45,7 @@ private:
     bool fetch_occupied = false;
     bool decode_occupied = false;
     bool execute_occupied = false;
-    uint32_t decoded_instruction_word = 0;
+    decoded_instruction decoded_inst;
     uint8_t exec_instruction_time = 0;
     //Registers
     //Active registers
@@ -79,7 +80,7 @@ private:
     program_state_register& cpsr() const;
     program_state_register& spsr() const;
     void set_mode(cpu_mode);
-    bool execute_instruction(uint32_t, bus&);
+    bool execute_instruction(decoded_instruction&, bus&);
     void flush_pipeline(bus&);
 };
 

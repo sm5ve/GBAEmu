@@ -6,7 +6,6 @@
 #include "cpu.h"
 #include "bus.h"
 #include <iostream>
-#include "disassembler.h"
 
 cpu::cpu(bool skip_to_cart) {
     isa = arm;
@@ -21,7 +20,7 @@ cpu::cpu(bool skip_to_cart) {
 void cpu::execute_cycle(bus & b) {
     bool execute_empty = true;
     if(decode_occupied){
-        execute_empty = execute_instruction(decoded_instruction_word, b);
+        execute_empty = execute_instruction(decoded_inst, b);
         if(execute_empty){
             instructions_executed++;
         }
@@ -30,8 +29,8 @@ void cpu::execute_cycle(bus & b) {
     if(execute_empty && fetch_occupied && fetch_transaction.fulfilled){
         //std::cout << "Decoding instruction 0x" << std::hex << fetch_transaction.value << std::endl;
         switch (isa) {
-            case arm: decoded_instruction_word = fetch_transaction.value; break;
-            case thumb: assert(false); //thumb mode unimplemented
+            case arm: decode_arm(fetch_transaction.value, decoded_inst); break;
+            case thumb: decode_thumb((uint16_t)fetch_transaction.value, decoded_inst); break; //thumb mode unimplemented
         }
         fetch_occupied = false;
         decode_occupied = true;
@@ -49,12 +48,11 @@ void cpu::execute_cycle(bus & b) {
     }
 }
 
-bool cpu::execute_instruction(uint32_t instruction, bus& b){
+bool cpu::execute_instruction(decoded_instruction& inst, bus& b){
     if(!execute_occupied){
         execute_occupied = true;
         exec_instruction_time = 1;
         active_execute_transaction = false;
-        //Decode instruction
     }
     if(active_execute_transaction && !execute_transaction.fulfilled){
         return false;
@@ -63,8 +61,8 @@ bool cpu::execute_instruction(uint32_t instruction, bus& b){
         return false;
     }
     execute_occupied = false;
-    //std::cout << "executed instruction " << disassemble(instruction, isa) << " (opcode " <<
-    //    std::hex << instruction << ")" << std::endl;
+    std::cout << "executed instruction " << decoded_inst << " (opcode " <<
+        std::hex << decoded_inst.raw_opcode << ")" << std::endl;
     return true;
 }
 
