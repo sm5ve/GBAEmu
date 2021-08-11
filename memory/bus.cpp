@@ -9,6 +9,8 @@ bus::bus(bios & b, cartridge & c) : the_bios(b), the_cartridge(c) {
     memset(queued_transactions, 0, sizeof(queued_transactions));
     next_free_transaction_slot = 0;
     next_queued_transaction_slot = 0;
+    iwram = malloc(IWRAM_SIZE);
+    ewram = malloc(EWRAM_SIZE);
 }
 
 bus::~bus(){
@@ -19,10 +21,17 @@ void* bus::operator[](uint32_t addr) {
     if(addr < 0x4000){
         return &the_bios.buffer[addr];
     }
+    if((0x02000000 <= addr) && (addr < 0x02040000)){
+        return &((uint8_t*)ewram)[addr & 0x3ffff];
+    }
+    if((0x03000000 <= addr) && (addr < 0x03008000)){
+        return &((uint8_t*)iwram)[addr & 0x7fff];
+    }
     if((0x08000000 <= addr) && (addr < 0x0e000000)){
         return &the_cartridge.buffer[addr & 0x01ffffff];
     }
     zero = 0;
+    //TODO this is not the appropriate output for oob reads. We will need to implement accurate behavior later
     return &zero;
 }
 

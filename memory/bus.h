@@ -9,6 +9,8 @@
 #include "memory_transaction.h"
 
 #define MEMORY_TRANSACTION_BUFFER_SIZE 10 //This will probably require some tuning
+#define EWRAM_SIZE 0x40000
+#define IWRAM_SIZE 0x8000
 
 class bus {
 public:
@@ -36,6 +38,8 @@ private:
     uint32_t next_free_transaction_slot;
     uint32_t next_queued_transaction_slot;
     uint32_t zero;
+    void* ewram;
+    void* iwram;
 };
 
 
