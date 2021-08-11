@@ -23,20 +23,6 @@ void* bus::operator[](uint32_t addr) {
     return &zero;
 }
 
-void bus::queue_transcation(memory_transaction& transaction){
-    assert(queued_transactions[next_free_transaction_slot] == NULL); //Ensure we don't overflow the ring buffer.
-    queued_transactions[next_free_transaction_slot] = &transaction;
-    transaction.index = next_free_transaction_slot;
-    next_free_transaction_slot = (next_free_transaction_slot + 1) % MEMORY_TRANSACTION_BUFFER_SIZE;
-    transaction.fulfilled = false;
-    //TODO implement timing
-    transaction.remaining_cycles = 1;
-}
-
-void bus::invalidate_transaction(memory_transaction& transaction) {
-    queued_transactions[transaction.index] = NULL;
-}
-
 void bus::execute_cycle(){
     if(next_free_transaction_slot == next_queued_transaction_slot){
         return;
