@@ -1,8 +1,8 @@
 #include <iostream>
-#include "bios.h"
-#include "cartridge.h"
-#include "bus.h"
-#include "cpu.h"
+#include "memory/bios.h"
+#include "memory/cartridge.h"
+#include "memory/bus.h"
+#include "cpu/cpu.h"
 
 #define BOOT_STRAIGHT_TO_CART true
 

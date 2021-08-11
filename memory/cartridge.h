@@ -7,7 +7,7 @@
 
 #define CART_MAX_SIZE 0x2000000
 
-#include "forward_decls.h"
+#include "../forward_decls.h"
 #include <string>
 
 class cartridge {

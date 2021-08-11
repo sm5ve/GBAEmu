@@ -4,7 +4,7 @@
 
 #include <cassert>
 #include "cpu.h"
-#include "bus.h"
+#include "../memory/bus.h"
 #include <iostream>
 
 cpu::cpu(bool skip_to_cart) {

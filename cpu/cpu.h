@@ -6,8 +6,8 @@
 #define GBAEMU_CPU_H
 
 #include <stdint.h>
-#include "forward_decls.h"
-#include "memory_transaction.h"
+#include "../forward_decls.h"
+#include "../memory/memory_transaction.h"
 #include "instruction_decoder.h"
 
 enum cpu_mode{
