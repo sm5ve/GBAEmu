@@ -19,6 +19,9 @@ void* bus::operator[](uint32_t addr) {
     if(addr < 0x4000){
         return &the_bios.buffer[addr];
     }
+    if((0x08000000 <= addr) && (addr < 0x0e000000)){
+        return &the_cartridge.buffer[addr & 0x01ffffff];
+    }
     zero = 0;
     return &zero;
 }
