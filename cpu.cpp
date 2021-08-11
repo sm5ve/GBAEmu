@@ -18,10 +18,13 @@ void cpu::execute_cycle(bus & b) {
     bool execute_empty = true;
     if(decode_occupied){
         execute_empty = execute_instruction(decoded_instruction_word, b);
+        if(execute_empty){
+            instructions_executed++;
+        }
         decode_occupied = false;
     }
     if(execute_empty && fetch_occupied && fetch_transaction.fulfilled){
-        std::cout << "Decoding instruction 0x" << std::hex << fetch_transaction.value << std::endl;
+        //std::cout << "Decoding instruction 0x" << std::hex << fetch_transaction.value << std::endl;
         switch (isa) {
             case arm: decoded_instruction_word = fetch_transaction.value; break;
             case thumb: assert(false); //thumb mode unimplemented
@@ -30,7 +33,7 @@ void cpu::execute_cycle(bus & b) {
         decode_occupied = true;
     }
     if(!fetch_occupied){
-        std::cout << "Fetching at PC 0x" << std::hex << active_gprs[15] << std::endl;
+        //std::cout << "Fetching at PC 0x" << std::hex << active_gprs[15] << std::endl;
         fetch_transaction.addr = active_gprs[15]; //Get the instruction at the current PC
         //TODO add timing info
         switch (isa) {
@@ -43,6 +46,6 @@ void cpu::execute_cycle(bus & b) {
 }
 
 bool cpu::execute_instruction(uint32_t instruction, bus& b){
-    std::cout << "instruction word: 0x" << std::hex << instruction << std::endl;
+    //std::cout << "instruction word: 0x" << std::hex << instruction << std::endl;
     return true;
 }

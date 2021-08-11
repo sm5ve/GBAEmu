@@ -38,17 +38,14 @@ class cpu {
 public:
     cpu();
     void execute_cycle(bus&);
+
+    uint32_t instructions_executed = 0;
 private:
     instruction_set isa;
     //Pipeline
     bool fetch_occupied = false;
     bool decode_occupied = false;
     uint32_t decoded_instruction_word = 0;
-    //Instruction timing info
-    //Memory access
-    uint8_t exec_rw_time = 0;
-    uint8_t fetch_rw_time = 0;
-    //
     uint8_t exec_instruction_time = 0;
     //Registers
     //Active registers
@@ -83,6 +80,7 @@ private:
     program_state_register& spsr() const;
     void set_mode(cpu_mode);
     bool execute_instruction(uint32_t, bus&);
+    void flush_pipeline();
 };
 
 
