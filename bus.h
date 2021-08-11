@@ -24,7 +24,6 @@ public:
         next_free_transaction_slot = (next_free_transaction_slot + 1) % MEMORY_TRANSACTION_BUFFER_SIZE;
         transaction.fulfilled = false;
         populateTiming(transaction);
-        transaction.remaining_cycles = 1;
     }
     inline void invalidate_transaction(memory_transaction& transaction) {
         queued_transactions[transaction.index] = NULL;
