@@ -17,6 +17,7 @@ struct memory_transaction {
     uint8_t num_sequential;
     uint8_t num_nonsequential;
     uint8_t remaining_cycles;
+    uint32_t index;
 };
 
 

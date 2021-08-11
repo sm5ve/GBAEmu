@@ -26,17 +26,25 @@ void* bus::operator[](uint32_t addr) {
 void bus::queue_transcation(memory_transaction& transaction){
     assert(queued_transactions[next_free_transaction_slot] == NULL); //Ensure we don't overflow the ring buffer.
     queued_transactions[next_free_transaction_slot] = &transaction;
+    transaction.index = next_free_transaction_slot;
     next_free_transaction_slot = (next_free_transaction_slot + 1) % MEMORY_TRANSACTION_BUFFER_SIZE;
     transaction.fulfilled = false;
     //TODO implement timing
     transaction.remaining_cycles = 1;
 }
 
+void bus::invalidate_transaction(memory_transaction& transaction) {
+    queued_transactions[transaction.index] = NULL;
+}
+
 void bus::execute_cycle(){
     if(next_free_transaction_slot == next_queued_transaction_slot){
         return;
     }
-    assert(queued_transactions[next_queued_transaction_slot] != NULL);
+    if(queued_transactions[next_queued_transaction_slot] == NULL){
+        next_queued_transaction_slot = (next_queued_transaction_slot + 1) % MEMORY_TRANSACTION_BUFFER_SIZE;
+        return;
+    }
     auto& transaction = *queued_transactions[next_queued_transaction_slot];
     if(--transaction.remaining_cycles == 0){
         transaction.fulfilled = true;
@@ -51,4 +59,5 @@ void bus::execute_cycle(){
         queued_transactions[next_queued_transaction_slot] = NULL;
         next_queued_transaction_slot = (next_queued_transaction_slot + 1) % MEMORY_TRANSACTION_BUFFER_SIZE;
     }
+    return;
 }

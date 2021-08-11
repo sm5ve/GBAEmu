@@ -17,8 +17,8 @@ public:
 
     void* operator[](uint32_t addr);
     void queue_transcation(memory_transaction&);
+    void invalidate_transaction(memory_transaction&);
     void execute_cycle();
-    //TODO add an abort transaction function
 private:
     bios& the_bios;
     cartridge& the_cartridge;
