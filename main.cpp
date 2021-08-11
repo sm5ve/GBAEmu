@@ -4,9 +4,6 @@
 #include "bus.h"
 #include "cpu.h"
 
-#include <sys/time.h>
-#include <ctime>
-
 void main_loop(bus& b, cpu& c){
     auto init_time = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     uint32_t cycle_count = 0;
