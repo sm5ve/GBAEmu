@@ -23,6 +23,22 @@ void* bus::operator[](uint32_t addr) {
     return &zero;
 }
 
+void bus::populateTiming(memory_transaction& transaction){
+    //TODO implement instruction prefetching
+    switch ((transaction.addr >> 24) & 0xff) {
+        case 0x0: transaction.remaining_cycles = 1; break;
+        case 0x2: transaction.remaining_cycles = 3 * ((transaction.type & 1) + 1); break;
+        case 0x5: transaction.remaining_cycles = 1; break; //TODO add 1 cycle if PPU is accessing pallet RAM
+        case 0x6: transaction.remaining_cycles = 1; break; //TODO add 1 cycle if PPU is accessing VRAM
+        case 0x7: transaction.remaining_cycles = 1 * ((transaction.type & 1) + 1); break; //TODO add 1 cycle if PPU is accessing OAM
+        case 0x8: case 0x9: transaction.remaining_cycles = 2 + 3 * ((transaction.type & 1) + 1); break; //TODO different wait states
+        case 0xA: case 0xB: transaction.remaining_cycles = 2 + 3 * ((transaction.type & 1) + 1); break; //TODO different wait states
+        case 0xC: case 0xD: transaction.remaining_cycles = 2 + 3 * ((transaction.type & 1) + 1); break; //TODO different wait states
+        case 0xE: transaction.remaining_cycles = 5; break; //TODO add different wait states
+        default: transaction.remaining_cycles = 1; break;
+    }
+}
+
 void bus::execute_cycle(){
     if(next_free_transaction_slot == next_queued_transaction_slot){
         return;

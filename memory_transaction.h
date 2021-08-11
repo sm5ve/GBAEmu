@@ -6,7 +6,7 @@
 #define GBAEMU_MEMORY_TRANSACTION_H
 
 enum memory_transaction_type{
-    read8, write8, read16, write16, read32, write32
+    read8 = 0x000, write8 = 0x100, read16 = 0x010, write16 = 0x110, read32 = 0x001, write32 = 0x101
 };
 
 struct memory_transaction {
@@ -14,8 +14,6 @@ struct memory_transaction {
     uint32_t addr;
     uint32_t value;
     bool fulfilled;
-    uint8_t num_sequential;
-    uint8_t num_nonsequential;
     uint8_t remaining_cycles;
     uint32_t index;
 };

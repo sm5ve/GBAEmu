@@ -16,16 +16,16 @@ public:
     ~bus();
 
     void* operator[](uint32_t addr);
+    void populateTiming(memory_transaction& transaction);
     inline void queue_transcation(memory_transaction& transaction){
         assert(queued_transactions[next_free_transaction_slot] == NULL); //Ensure we don't overflow the ring buffer.
         queued_transactions[next_free_transaction_slot] = &transaction;
         transaction.index = next_free_transaction_slot;
         next_free_transaction_slot = (next_free_transaction_slot + 1) % MEMORY_TRANSACTION_BUFFER_SIZE;
         transaction.fulfilled = false;
-        //TODO implement timing
+        populateTiming(transaction);
         transaction.remaining_cycles = 1;
     }
-
     inline void invalidate_transaction(memory_transaction& transaction) {
         queued_transactions[transaction.index] = NULL;
     }
