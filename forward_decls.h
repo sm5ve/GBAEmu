@@ -7,4 +7,7 @@
 
 class bus;
 
+enum instruction_set{
+    arm, thumb
+};
 #endif //GBAEMU_FORWARD_DECLS_H

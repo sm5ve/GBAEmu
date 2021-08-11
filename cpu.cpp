@@ -6,12 +6,16 @@
 #include "cpu.h"
 #include "bus.h"
 #include <iostream>
+#include "disassembler.h"
 
-cpu::cpu() {
+cpu::cpu(bool skip_to_cart) {
     isa = arm;
     memset(active_gprs, 0, sizeof(active_gprs));
     memset(&fetch_transaction, 0, sizeof(fetch_transaction));
     memset(&execute_transaction, 0, sizeof(execute_transaction));
+    if(skip_to_cart){
+        active_gprs[15] = 0x08000000;
+    }
 }
 
 void cpu::execute_cycle(bus & b) {
@@ -59,6 +63,8 @@ bool cpu::execute_instruction(uint32_t instruction, bus& b){
         return false;
     }
     execute_occupied = false;
+    //std::cout << "executed instruction " << disassemble(instruction, isa) << " (opcode " <<
+    //    std::hex << instruction << ")" << std::endl;
     return true;
 }
 

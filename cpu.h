@@ -18,9 +18,7 @@ enum cpu_mode{
     und = 0b11011, //Undefined
     sys = 0b11111, //System
 };
-enum instruction_set{
-    arm, thumb
-};
+
 //The order of these fields might need to be reversed
 typedef struct program_state_register{
     bool negative : 1;
@@ -32,11 +30,11 @@ typedef struct program_state_register{
     bool fiq_disabled : 1;
     bool state : 1;
     cpu_mode mode : 5;
-};
+} program_state_register;
 
 class cpu {
 public:
-    cpu();
+    cpu(bool skip_to_cart);
     void execute_cycle(bus&);
 
     uint32_t instructions_executed = 0;
