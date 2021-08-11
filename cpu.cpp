@@ -46,6 +46,24 @@ void cpu::execute_cycle(bus & b) {
 }
 
 bool cpu::execute_instruction(uint32_t instruction, bus& b){
-    //std::cout << "instruction word: 0x" << std::hex << instruction << std::endl;
+    if(!execute_occupied){
+        execute_occupied = true;
+        exec_instruction_time = 1;
+        active_execute_transaction = false;
+        //Decode instruction
+    }
+    if(active_execute_transaction && !execute_transaction.fulfilled){
+        return false;
+    }
+    if(--exec_instruction_time != 0){
+        return false;
+    }
+    execute_occupied = false;
     return true;
+}
+
+void cpu::flush_pipeline(bus& b) {
+    b.invalidate_transaction(fetch_transaction);
+    decode_occupied = false;
+    fetch_occupied = false;
 }

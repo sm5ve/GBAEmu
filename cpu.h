@@ -45,6 +45,7 @@ private:
     //Pipeline
     bool fetch_occupied = false;
     bool decode_occupied = false;
+    bool execute_occupied = false;
     uint32_t decoded_instruction_word = 0;
     uint8_t exec_instruction_time = 0;
     //Registers
@@ -73,6 +74,7 @@ private:
 
     memory_transaction fetch_transaction;
     memory_transaction execute_transaction;
+    bool active_execute_transaction = false;
 
     //Perhaps I should use reg_write and reg_read so implement pipeline flushing on pc write
     uint32_t* gp_regs() const;
@@ -80,7 +82,7 @@ private:
     program_state_register& spsr() const;
     void set_mode(cpu_mode);
     bool execute_instruction(uint32_t, bus&);
-    void flush_pipeline();
+    void flush_pipeline(bus&);
 };
 
 
