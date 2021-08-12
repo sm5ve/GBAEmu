@@ -20,6 +20,7 @@ cpu::cpu(bool skip_to_cart) {
 void cpu::execute_cycle(bus & b) {
     bool execute_empty = true;
     if(decode_occupied){
+        execute_pc = decode_pc;
         execute_empty = execute_instruction(decoded_inst, b);
         if(execute_empty){
             instructions_executed++;
@@ -27,7 +28,8 @@ void cpu::execute_cycle(bus & b) {
         decode_occupied = false;
     }
     if(execute_empty && fetch_occupied && fetch_transaction.fulfilled){
-        //std::cout << "Decoding instruction 0x" << std::hex << fetch_transaction.value << std::endl;
+        std::cout << "Decoding instruction 0x" << std::hex << fetch_transaction.value << std::endl;
+        decode_pc = active_gprs[15];
         switch (isa) {
             case arm: decode_arm(fetch_transaction.value, decoded_inst); break;
             case thumb: decode_thumb((uint16_t)fetch_transaction.value, decoded_inst); break; //thumb mode unimplemented
@@ -36,7 +38,7 @@ void cpu::execute_cycle(bus & b) {
         decode_occupied = true;
     }
     if(!fetch_occupied){
-        //std::cout << "Fetching at PC 0x" << std::hex << active_gprs[15] << std::endl;
+        std::cout << "Fetching at PC 0x" << std::hex << active_gprs[15] << std::endl;
         fetch_transaction.addr = active_gprs[15]; //Get the instruction at the current PC
         //TODO add timing info
         switch (isa) {
@@ -53,6 +55,9 @@ bool cpu::execute_instruction(decoded_instruction& inst, bus& b){
         execute_occupied = true;
         exec_instruction_time = 1;
         active_execute_transaction = false;
+        switch (inst.type) {
+            case BRANCH_IMMEDIATE: break;
+        }
     }
     if(active_execute_transaction && !execute_transaction.fulfilled){
         return false;
@@ -63,6 +68,32 @@ bool cpu::execute_instruction(decoded_instruction& inst, bus& b){
     execute_occupied = false;
     std::cout << "executed instruction " << decoded_inst << " (opcode " <<
         std::hex << decoded_inst.raw_opcode << ")" << std::endl;
+    if(inst.normal_condition){
+        switch (inst.cond) {
+            case EQ: if(!cpsr.zero) return true;
+            case NE: if(cpsr.zero) return true;
+            case CS: if(!cpsr.carry) return true;
+            case CC: if(cpsr.carry) return true;
+            case MI: if(!cpsr.negative) return true;
+            case PL: if(cpsr.negative) return true;
+            case VS: if(!cpsr.overflow) return true;
+            case VC: if(cpsr.overflow) return true;
+            case HI: if(!(cpsr.carry && !cpsr.zero)) return true;
+            case LS: if((cpsr.carry && !cpsr.zero)) return true;
+            case GE: if(cpsr.negative != cpsr.overflow) return true;
+            case LT: if(cpsr.negative == cpsr.overflow) return true;
+            case GT: if(cpsr.zero || (cpsr.negative != cpsr.overflow)) return true;
+            case LE: if(!cpsr.zero && (cpsr.negative == cpsr.overflow)) return true;
+        }
+    }
+    switch (inst.type) {
+        case BRANCH_IMMEDIATE:
+            if(inst.branchData.link){
+                active_gprs[14] = execute_pc + inst.branchData.link_offset;
+            }
+            active_gprs[15] += inst.branchData.offset;
+            flush_pipeline(b);
+    }
     return true;
 }
 

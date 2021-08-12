@@ -4,7 +4,7 @@
 #include "memory/bus.h"
 #include "cpu/cpu.h"
 
-#define BOOT_STRAIGHT_TO_CART true
+#define BOOT_STRAIGHT_TO_CART false
 
 void main_loop(bus& b, cpu& c){
     auto init_time = duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -23,12 +23,10 @@ void main_loop(bus& b, cpu& c){
 }
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
     bios b("../gba_bios.bin");
     cartridge c("../rom.gba");
     bus bs(b, c);
-    cpu cpu(true);
-    std::cout << std::hex << *((uint32_t*)bs[8]) << std::endl;
+    cpu cpu(BOOT_STRAIGHT_TO_CART);
     main_loop(bs, cpu);
     return 0;
 }

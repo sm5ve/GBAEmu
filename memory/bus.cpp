@@ -31,7 +31,7 @@ void* bus::operator[](uint32_t addr) {
         return &the_cartridge.buffer[addr & 0x01ffffff];
     }
     zero = 0;
-    //TODO this is not the appropriate output for oob reads. We will need to implement accurate behavior later
+    //TODO this is not the appropriate output for oob memory accesses. We will need to implement accurate behavior later
     return &zero;
 }
 
@@ -62,6 +62,7 @@ void bus::execute_cycle(){
     auto& transaction = *queued_transactions[next_queued_transaction_slot];
     if(--transaction.remaining_cycles == 0){
         transaction.fulfilled = true;
+        //TODO ensure ROM is read only
         switch (transaction.type) {
             case write8: *(uint8_t*)(*this)[transaction.addr] = (uint8_t)transaction.value; break;
             case write16: *(uint16_t*)(*this)[transaction.addr] = (uint16_t)transaction.value; break;

@@ -47,13 +47,15 @@ private:
     bool execute_occupied = false;
     decoded_instruction decoded_inst;
     uint8_t exec_instruction_time = 0;
+    uint32_t decode_pc;
+    uint32_t execute_pc;
     //Registers
     //Active registers
     //These are what the ARM code can see running in a given mode
     //Active GPRs for a given mode
     uint32_t active_gprs[16];
     //Program specific registers
-    program_state_register active_cpsr;
+    program_state_register cpsr;
     program_state_register active_spsr;
     //Internal registers
     //These are the backups for banked registers
@@ -75,9 +77,6 @@ private:
     memory_transaction execute_transaction;
     bool active_execute_transaction = false;
 
-    //Perhaps I should use reg_write and reg_read so implement pipeline flushing on pc write
-    uint32_t* gp_regs() const;
-    program_state_register& cpsr() const;
     program_state_register& spsr() const;
     void set_mode(cpu_mode);
     bool execute_instruction(decoded_instruction&, bus&);

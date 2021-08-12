@@ -9,7 +9,7 @@
 #include <ostream>
 
 enum instruction_type{
-
+    BRANCH_IMMEDIATE
 };
 
 enum condition{
@@ -28,13 +28,24 @@ enum condition{
     GT=0b1100,
     LE=0b1101,
     UNCONDITIONAL=0b1110,
-    UNDEF=0b1111
+    SPECIAL=0b1111
+};
+
+typedef struct branch_data{
+    int32_t offset;
+    int32_t link_offset;
+    bool link;
 };
 
 typedef struct decoded_instruction{
     uint32_t raw_opcode;
     instruction_type type;
     condition cond;
+    bool undef;
+    union{
+        branch_data branchData;
+    };
+    bool normal_condition;
 } decoded_instruction;
 
 void decode_arm(uint32_t opcode, decoded_instruction&);
