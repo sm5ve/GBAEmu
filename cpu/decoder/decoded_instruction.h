@@ -1,18 +1,18 @@
 //
-// Created by Spencer Martin on 8/11/21.
+// Created by Spencer Martin on 8/12/21.
 //
 
-#ifndef GBAEMU_INSTRUCTION_DECODER_H
-#define GBAEMU_INSTRUCTION_DECODER_H
+#ifndef GBAEMU_DECODED_INSTRUCTION_H
+#define GBAEMU_DECODED_INSTRUCTION_H
 
 #include <stdint.h>
 #include <ostream>
 
 enum instruction_type{
-    BRANCH_IMMEDIATE
+    UNDEFINED, BRANCH_IMMEDIATE
 };
 
-enum condition{
+enum instruction_condition{
     EQ=0b0000,
     NE=0b0001,
     CS=0b0010,
@@ -31,6 +31,25 @@ enum condition{
     SPECIAL=0b1111
 };
 
+enum data_processing_ops{
+    AND = 0b0000,
+    EOR = 0b0001,
+    SUB = 0b0010,
+    RSB = 0b0011,
+    ADD = 0b0100,
+    ADC = 0b0101,
+    SBC = 0b0110,
+    RSC = 0b0111,
+    TST = 0b1000,
+    TEQ = 0b1001,
+    CMP = 0b1010,
+    CMN = 0b1011,
+    ORR = 0b1100,
+    MOV = 0b1101,
+    BIC = 0b1110,
+    MVN = 0b1111
+};
+
 typedef struct branch_data{
     int32_t offset;
     int32_t link_offset;
@@ -40,17 +59,14 @@ typedef struct branch_data{
 typedef struct decoded_instruction{
     uint32_t raw_opcode;
     instruction_type type;
-    condition cond;
-    bool undef;
+    instruction_condition cond;
     uint32_t pc;
     union{
         branch_data branchData;
     };
     bool normal_condition;
+    bool flush;
+    uint8_t icycles;
 } decoded_instruction;
 
-void decode_arm(uint32_t opcode, decoded_instruction&, uint32_t pc = (uint32_t)-1);
-void decode_thumb(uint16_t opcode, decoded_instruction&, uint32_t pc = (uint32_t)-1);
-std::ostream &operator<<(std::ostream &os, decoded_instruction&);
-
-#endif //GBAEMU_INSTRUCTION_DECODER_H
+#endif //GBAEMU_DECODED_INSTRUCTION_H

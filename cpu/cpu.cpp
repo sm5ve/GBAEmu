@@ -51,7 +51,7 @@ void cpu::execute_cycle(bus & b) {
 bool cpu::execute_instruction(decoded_instruction& inst, bus& b){
     if(!execute_occupied){
         execute_occupied = true;
-        exec_instruction_time = 1;
+        exec_instruction_time = 1 + inst.icycles;
         active_execute_transaction = false;
         switch (inst.type) {
             case BRANCH_IMMEDIATE: break;
@@ -65,8 +65,8 @@ bool cpu::execute_instruction(decoded_instruction& inst, bus& b){
     }
     execute_occupied = false;
     decoded_inst.pc = active_gprs[15];
-    std::cout << "executed instruction " << decoded_inst << " (opcode " <<
-        std::hex << decoded_inst.raw_opcode << ")" << std::endl;
+    //std::cout << "executed instruction " << decoded_inst << " (opcode " <<
+    //    std::hex << decoded_inst.raw_opcode << ")" << std::endl;
     if(inst.normal_condition){
         switch (inst.cond) {
             case EQ: if(!cpsr.zero) return true;
@@ -86,18 +86,22 @@ bool cpu::execute_instruction(decoded_instruction& inst, bus& b){
         }
     }
     switch (inst.type) {
+        case UNDEFINED: assert(false);
         case BRANCH_IMMEDIATE:
             //This reflects the behavior described on the
             if(inst.branchData.link){
                 active_gprs[14] = active_gprs[15] + inst.branchData.link_offset;
             }
             active_gprs[15] = active_gprs[15] + inst.branchData.offset;
-            flush_pipeline(b);
+            break;
     }
+    if(inst.flush)
+        flush_pipeline(b);
     return true;
 }
 
 void cpu::flush_pipeline(bus& b) {
+    //std::cout << "flushing pipeline" << std::endl;
     b.invalidate_transaction(fetch_transaction);
     decode_occupied = false;
     fetch_occupied = false;

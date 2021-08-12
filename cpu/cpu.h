@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "../forward_decls.h"
 #include "../memory/memory_transaction.h"
-#include "instruction_decoder.h"
+#include "decoder/instruction_decoder.h"
 
 enum cpu_mode{
     usr = 0b10000, //User
