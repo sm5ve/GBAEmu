@@ -6,8 +6,10 @@
 #include <iostream>
 #include "../util.h"
 
-void decode_arm(uint32_t opcode, decoded_instruction& i){
+void decode_arm(uint32_t opcode, decoded_instruction& i, uint32_t pc){
+    std::cout << "decoding instruction " << std::hex << opcode << std::endl;
     i.raw_opcode = opcode;
+    i.pc = pc;
     i.cond = (condition)((opcode >> 28) & 0xf);
     i.undef = false;
     if(i.cond == SPECIAL){
@@ -15,7 +17,7 @@ void decode_arm(uint32_t opcode, decoded_instruction& i){
         assert(false);
     }
     switch((opcode >> 25) & 0x7){
-        case 0b000: assert(false); //unimplemented
+        case 0b000: assert(false); //ALU things
         case 0b001: assert(false); //data processing
         case 0b010: i.undef = true; return;
         case 0b011: if(opcode & (1 << 4)){i.undef = true; return;}
@@ -27,7 +29,7 @@ void decode_arm(uint32_t opcode, decoded_instruction& i){
             i.type = BRANCH_IMMEDIATE;
             i.branchData.link_offset = -4;
             i.branchData.link = (opcode >> 24) & 1;
-            i.branchData.offset = (sign_extend<24>(opcode & 0xffffff) << 2) + 8;
+            i.branchData.offset = (sign_extend<24>(opcode & 0xffffff) << 2);
             std::cout << "computed branch data offset " << i.branchData.offset << std::endl;
         } break; //Branch
         case 0b110: case 0b111: if((opcode >> 24) & 0xf == 0xf){
@@ -39,8 +41,9 @@ void decode_arm(uint32_t opcode, decoded_instruction& i){
     }
 }
 
-void decode_thumb(uint16_t opcode, decoded_instruction& i){
+void decode_thumb(uint16_t opcode, decoded_instruction& i, uint32_t pc){
     i.raw_opcode = opcode;
+    i.pc = pc;
     assert(false);
 }
 
@@ -74,7 +77,10 @@ std::ostream &operator<<(std::ostream &os, decoded_instruction& i){
         case BRANCH_IMMEDIATE:
             os << "b";
             if(i.branchData.link) os << "l";
-            os << i.cond << " " << "[PC " << "+-"[i.branchData.offset < 0] << " " << std::hex << abs(i.branchData.offset) << "]";
+            if(i.pc == -1)
+                os << i.cond << " " << "[PC " << "+-"[i.branchData.offset < 0] << " " << std::hex << abs(i.branchData.offset) << "]";
+            else
+                os << i.cond << " " << std::hex << (i.pc + i.branchData.offset + 8);
     }
     return os;
 }

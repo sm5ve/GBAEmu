@@ -42,14 +42,15 @@ typedef struct decoded_instruction{
     instruction_type type;
     condition cond;
     bool undef;
+    uint32_t pc;
     union{
         branch_data branchData;
     };
     bool normal_condition;
 } decoded_instruction;
 
-void decode_arm(uint32_t opcode, decoded_instruction&);
-void decode_thumb(uint16_t opcode, decoded_instruction&);
+void decode_arm(uint32_t opcode, decoded_instruction&, uint32_t pc = (uint32_t)-1);
+void decode_thumb(uint16_t opcode, decoded_instruction&, uint32_t pc = (uint32_t)-1);
 std::ostream &operator<<(std::ostream &os, decoded_instruction&);
 
 #endif //GBAEMU_INSTRUCTION_DECODER_H
