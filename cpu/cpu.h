@@ -47,9 +47,6 @@ private:
     bool execute_occupied = false;
     decoded_instruction decoded_inst;
     uint8_t exec_instruction_time = 0;
-    uint32_t fetching_pc;
-    uint32_t decoding_pc;
-    uint32_t executing_pc;
     //Registers
     //Active registers
     //These are what the ARM code can see running in a given mode

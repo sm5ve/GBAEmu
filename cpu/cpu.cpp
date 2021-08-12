@@ -20,7 +20,6 @@ cpu::cpu(bool skip_to_cart) {
 void cpu::execute_cycle(bus & b) {
     bool execute_empty = true;
     if(decode_occupied){
-        executing_pc = decoding_pc;
         execute_empty = execute_instruction(decoded_inst, b);
         if(execute_empty){
             instructions_executed++;
@@ -29,10 +28,9 @@ void cpu::execute_cycle(bus & b) {
     }
     if(execute_empty && fetch_occupied && fetch_transaction.fulfilled){
         //std::cout << "Decoding instruction 0x" << std::hex << fetch_transaction.value << std::endl;
-        decoding_pc = fetching_pc;
         switch (isa) {
-            case arm: decode_arm(fetch_transaction.value, decoded_inst, decoding_pc); break;
-            case thumb: decode_thumb((uint16_t)fetch_transaction.value, decoded_inst, decoding_pc); break; //thumb mode unimplemented
+            case arm: decode_arm(fetch_transaction.value, decoded_inst); break;
+            case thumb: decode_thumb((uint16_t)fetch_transaction.value, decoded_inst); break; //thumb mode unimplemented
         }
         fetch_occupied = false;
         decode_occupied = true;
@@ -40,7 +38,6 @@ void cpu::execute_cycle(bus & b) {
     if(!fetch_occupied){
         //std::cout << "Fetching at PC 0x" << std::hex << active_gprs[15] << std::endl;
         fetch_transaction.addr = active_gprs[15]; //Get the instruction at the current PC
-        fetching_pc = active_gprs[15];
         //TODO add timing info
         switch (isa) {
             case arm: fetch_transaction.type = read32; active_gprs[15] += 4; break;
@@ -67,6 +64,7 @@ bool cpu::execute_instruction(decoded_instruction& inst, bus& b){
         return false;
     }
     execute_occupied = false;
+    decoded_inst.pc = active_gprs[15];
     std::cout << "executed instruction " << decoded_inst << " (opcode " <<
         std::hex << decoded_inst.raw_opcode << ")" << std::endl;
     if(inst.normal_condition){

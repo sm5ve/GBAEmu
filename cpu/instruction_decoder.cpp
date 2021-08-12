@@ -16,9 +16,12 @@ void decode_arm(uint32_t opcode, decoded_instruction& i, uint32_t pc){
         [[unlikely]]
         assert(false);
     }
+    std::cout << "op1 " << std::hex << ((opcode >> 25) & 0x7) << std::endl;
     switch((opcode >> 25) & 0x7){
         case 0b000: assert(false); //ALU things
-        case 0b001: assert(false); //data processing
+        case 0b001: {
+            assert(false);
+        } break; //data processing
         case 0b010: i.undef = true; return;
         case 0b011: if(opcode & (1 << 4)){i.undef = true; return;}
         {
@@ -29,7 +32,7 @@ void decode_arm(uint32_t opcode, decoded_instruction& i, uint32_t pc){
             i.type = BRANCH_IMMEDIATE;
             i.branchData.link_offset = -4;
             i.branchData.link = (opcode >> 24) & 1;
-            i.branchData.offset = (sign_extend<24>(opcode & 0xffffff) << 2);
+            i.branchData.offset = sign_extend<24>(opcode & 0xffffff) << 2;
             std::cout << "computed branch data offset " << i.branchData.offset << std::endl;
         } break; //Branch
         case 0b110: case 0b111: if((opcode >> 24) & 0xf == 0xf){
@@ -80,7 +83,7 @@ std::ostream &operator<<(std::ostream &os, decoded_instruction& i){
             if(i.pc == -1)
                 os << i.cond << " " << "[PC " << "+-"[i.branchData.offset < 0] << " " << std::hex << abs(i.branchData.offset) << "]";
             else
-                os << i.cond << " " << std::hex << (i.pc + i.branchData.offset + 8);
+                os << i.cond << " " << std::hex << (i.pc + i.branchData.offset);
     }
     return os;
 }
