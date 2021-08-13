@@ -4,7 +4,10 @@
 
 #include "instruction_decoder.h"
 #include <iostream>
+#include <utility>
 #include "../../util.h"
+
+//#define CACHE_ARM_DECODE
 
 //Referenced Eggvance emulator https://github.com/jsmolka/eggvance/blob/master/eggvance/src/arm/decode.h
 #define ARM_SWI_MASK 0b0000'1111'0000'0000'0000'0000'0000'0000
@@ -104,30 +107,53 @@ void decode_arm_dp(uint32_t opcode, decoded_instruction& i){
 
 //Just an idea: if this method ends up being too slow, perhaps we could cache every opcode we decode
 //We could even mask out the last 4 bits since they're really easy to parse!
+
+std::pair<uint32_t, decoded_instruction> decode_cache[0x10000];
+uint32_t decoder_cache_hits = 0;
+
+inline uint16_t hash_opcode(uint32_t op){
+    return (op & 0xffff) ^ (((op >> 16) & 0x0fff) * 23);
+}
+
 void decode_arm(uint32_t opcode, decoded_instruction& i, uint32_t pc){
     //std::cout << "decoding instruction " << std::hex << opcode << std::endl;
-    i.raw_opcode = opcode;
+#ifdef CACHE_ARM_DECODE
+    auto& cache_entry = decode_cache[hash_opcode(opcode)];
+    if (cache_entry.first == (opcode & 0x0fffffff)){
+        decoder_cache_hits++;
+        i = cache_entry.second;
+        i.cond = (instruction_condition)((opcode >> 28) & 0xf);
+        i.pc = pc;
+        i.raw_opcode = opcode;
+        return;
+    }
+#endif
+    i.cond = (instruction_condition)((opcode >> 28) & 0xf);
     i.pc = pc;
+    i.raw_opcode = opcode;
     i.icycles = 0;
     i.flush = false;
     i.normal_condition = true;
-    i.cond = (instruction_condition)((opcode >> 28) & 0xf);
     //Perhaps this could be optimized further by switching on some initial bits?
-    if((opcode & ARM_SWI_MASK) == ARM_SWI_SIG) {decode_arm_swi(opcode, i); return;}
-    if((opcode & ARM_CDT_MASK) == ARM_CDT_SIG) {decode_arm_cdt(opcode, i); return;}
-    if((opcode & ARM_CDO_MASK) == ARM_CDO_SIG) {decode_arm_cdo(opcode, i); return;}
-    if((opcode & ARM_CRT_MASK) == ARM_CRT_SIG) {decode_arm_crt(opcode, i); return;}
-    if((opcode & ARM_BL_MASK ) == ARM_BL_SIG ) {decode_arm_bl(opcode, i); return;}
-    if((opcode & ARM_BDT_MASK) == ARM_BDT_SIG) {decode_arm_bdt(opcode, i); return;}
-    if((opcode & ARM_UD1_MASK) == ARM_UD1_SIG) {decode_arm_ud1(opcode, i); return;}
-    if((opcode & ARM_SDT_MASK) == ARM_SDT_SIG) {decode_arm_sdt(opcode, i); return;}
-    if((opcode & ARM_BX_MASK ) == ARM_BX_SIG ) {decode_arm_bx(opcode, i); return;}
-    if((opcode & ARM_MUL_MASK) == ARM_MUL_SIG) {decode_arm_mul(opcode, i); return;}
-    if((opcode & ARM_MLL_MASK) == ARM_MLL_SIG) {decode_arm_mll(opcode, i); return;}
-    if((opcode & ARM_SDS_MASK) == ARM_SDS_SIG) {decode_arm_sds(opcode, i); return;}
-    if((opcode & ARM_HDT_MASK) == ARM_HDT_SIG) {decode_arm_hdt(opcode, i); return;}
-    if((opcode & ARM_STR_MASK) == ARM_STR_SIG) {decode_arm_str(opcode, i); return;}
-    if((opcode & ARM_DP_MASK ) == ARM_DP_SIG ) {decode_arm_dp(opcode, i); return;}
+    if((opcode & ARM_SWI_MASK) == ARM_SWI_SIG) decode_arm_swi(opcode, i);
+    else if((opcode & ARM_CDT_MASK) == ARM_CDT_SIG) decode_arm_cdt(opcode, i);
+    else if((opcode & ARM_CDO_MASK) == ARM_CDO_SIG) decode_arm_cdo(opcode, i);
+    else if((opcode & ARM_CRT_MASK) == ARM_CRT_SIG) decode_arm_crt(opcode, i);
+    else if((opcode & ARM_BL_MASK ) == ARM_BL_SIG ) decode_arm_bl(opcode, i);
+    else if((opcode & ARM_BDT_MASK) == ARM_BDT_SIG) decode_arm_bdt(opcode, i);
+    else if((opcode & ARM_UD1_MASK) == ARM_UD1_SIG) decode_arm_ud1(opcode, i);
+    else if((opcode & ARM_SDT_MASK) == ARM_SDT_SIG) decode_arm_sdt(opcode, i);
+    else if((opcode & ARM_BX_MASK ) == ARM_BX_SIG ) decode_arm_bx(opcode, i);
+    else if((opcode & ARM_MUL_MASK) == ARM_MUL_SIG) decode_arm_mul(opcode, i);
+    else if((opcode & ARM_MLL_MASK) == ARM_MLL_SIG) decode_arm_mll(opcode, i);
+    else if((opcode & ARM_SDS_MASK) == ARM_SDS_SIG) decode_arm_sds(opcode, i);
+    else if((opcode & ARM_HDT_MASK) == ARM_HDT_SIG) decode_arm_hdt(opcode, i);
+    else if((opcode & ARM_STR_MASK) == ARM_STR_SIG) decode_arm_str(opcode, i);
+    else if((opcode & ARM_DP_MASK ) == ARM_DP_SIG ) decode_arm_dp(opcode, i);
+    else assert(false);
 
-    assert(false);
+#ifdef CACHE_ARM_DECODE
+    cache_entry.first = opcode & 0x0fffffff;
+    cache_entry.second = i;
+#endif
 }
